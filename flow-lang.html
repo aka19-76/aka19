@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FLOW — The Hip-Hop Programming Language</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #E8C84A;
+    --cream: #F5EDD6;
+    --black: #0A0A0A;
+    --deep: #111111;
+    --mid: #1C1C1C;
+    --card: #181818;
+    --accent: #C0392B;
+    --muted: #888;
+    --green: #2ECC71;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRAIN TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  /* HERO */
+  .hero {
+    padding: 80px 60px 60px;
+    border-bottom: 1px solid #222;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: 'FLOW';
+    position: absolute;
+    right: -20px;
+    top: -30px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 260px;
+    color: rgba(232,200,74,0.04);
+    pointer-events: none;
+    letter-spacing: -10px;
+  }
+  .hero .label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(64px, 10vw, 110px);
+    line-height: 0.9;
+    letter-spacing: 2px;
+    margin-bottom: 24px;
+  }
+  .hero h1 span { color: var(--gold); }
+  .hero p {
+    max-width: 540px;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #aaa;
+    margin-bottom: 32px;
+  }
+  .version-badge {
+    display: inline-block;
+    background: var(--gold);
+    color: var(--black);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 12px;
+    letter-spacing: 2px;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid #222;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 18px 32px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+    background: none;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+  }
+  .tab:hover { color: var(--cream); }
+  .tab.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+
+  /* PANELS */
+  .panel { display: none; padding: 60px; }
+  .panel.active { display: block; animation: fadeUp 0.4s ease; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* SECTION HEADERS */
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .section-sub {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 48px;
+    font-style: italic;
+  }
+
+  /* PHILOSOPHY GRID */
+  .phil-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1px;
+    background: #222;
+    margin-bottom: 60px;
+  }
+  .phil-card {
+    background: var(--card);
+    padding: 32px 28px;
+    transition: background 0.2s;
+  }
+  .phil-card:hover { background: #202020; }
+  .phil-card .icon { font-size: 28px; margin-bottom: 14px; }
+  .phil-card h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .phil-card p { font-size: 13px; color: #888; line-height: 1.6; }
+
+  /* KEYWORDS TABLE */
+  .kw-grid {
+    display: grid;
+    gap: 1px;
+    background: #1a1a1a;
+    margin-bottom: 48px;
+  }
+  .kw-row {
+    display: grid;
+    grid-template-columns: 180px 1fr 1fr;
+    background: var(--card);
+    transition: background 0.2s;
+  }
+  .kw-row:hover { background: #1e1e1e; }
+  .kw-row.header {
+    background: #111;
+    border-bottom: 1px solid #333;
+  }
+  .kw-cell {
+    padding: 16px 20px;
+    font-size: 13px;
+    border-right: 1px solid #1a1a1a;
+  }
+  .kw-cell:last-child { border-right: none; }
+  .kw-cell.mono {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+  }
+  .kw-cell.header-cell {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .kw-cell .traditional {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: #555;
+    display: block;
+    margin-top: 4px;
+  }
+
+  /* CODE BLOCKS */
+  .code-block {
+    background: #0D0D0D;
+    border: 1px solid #222;
+    border-left: 3px solid var(--gold);
+    padding: 28px 32px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    line-height: 1.9;
+    margin-bottom: 32px;
+    overflow-x: auto;
+    position: relative;
+  }
+  .code-block .lang-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    text-transform: uppercase;
+    opacity: 0.5;
+  }
+  .code-block .copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 60px;
+    background: #222;
+    border: 1px solid #333;
+    color: #888;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .code-block .copy-btn:hover { background: #333; color: var(--cream); }
+
+  .kw { color: var(--gold); font-weight: 700; }
+  .str { color: #e07b56; }
+  .num { color: #7cc5e8; }
+  .comment { color: #444; font-style: italic; }
+  .fn { color: #b5d98a; }
+  .var { color: var(--cream); }
+  .op { color: #888; }
+
+  /* EXAMPLE CARDS */
+  .example-card {
+    background: var(--card);
+    border: 1px solid #222;
+    margin-bottom: 32px;
+    overflow: hidden;
+  }
+  .example-header {
+    background: #111;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #1e1e1e;
+  }
+  .example-header .title {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--gold);
+  }
+  .example-header .desc {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .example-body { padding: 0; }
+  .example-body .code-block {
+    margin: 0;
+    border: none;
+    border-left: none;
+  }
+
+  /* PLAYGROUND */
+  .playground {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: #1a1a1a;
+    border: 1px solid #222;
+    margin-bottom: 40px;
+  }
+  .play-pane {
+    background: var(--card);
+  }
+  .play-header {
+    background: #111;
+    padding: 12px 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    border-bottom: 1px solid #1a1a1a;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .play-header .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .dot-r { background: #e05252; }
+  .dot-y { background: var(--gold); }
+  .dot-g { background: var(--green); }
+  textarea {
+    width: 100%;
+    height: 280px;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 24px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--cream);
+    resize: none;
+  }
+  .output-area {
+    height: 280px;
+    padding: 24px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--green);
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+  .run-btn {
+    background: var(--gold);
+    color: var(--black);
+    border: none;
+    padding: 14px 36px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: block;
+    width: 100%;
+  }
+  .run-btn:hover { background: #f0d060; transform: scale(1.01); }
+  .run-btn:active { transform: scale(0.99); }
+
+  /* TYPES */
+  .type-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1px;
+    background: #1a1a1a;
+    margin-bottom: 48px;
+  }
+  .type-card {
+    background: var(--card);
+    padding: 28px;
+    transition: background 0.2s;
+  }
+  .type-card:hover { background: #1e1e1e; }
+  .type-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    color: var(--gold);
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .type-aka {
+    font-size: 11px;
+    color: #555;
+    font-style: italic;
+    margin-bottom: 12px;
+  }
+  .type-desc { font-size: 13px; color: #888; line-height: 1.6; }
+  .type-example {
+    margin-top: 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: #e07b56;
+    background: #0D0D0D;
+    padding: 8px 12px;
+  }
+
+  /* CHEATSHEET TOGGLE */
+  .cheat-row {
+    border-bottom: 1px solid #1a1a1a;
+    cursor: pointer;
+  }
+  .cheat-summary {
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--cream);
+    transition: color 0.2s;
+  }
+  .cheat-row:hover .cheat-summary { color: var(--gold); }
+  .cheat-detail {
+    display: none;
+    padding: 0 24px 20px;
+    font-size: 13px;
+    color: #888;
+    line-height: 1.7;
+  }
+  .cheat-row.open .cheat-detail { display: block; }
+  .cheat-row.open .cheat-summary { color: var(--gold); }
+  .chevron { transition: transform 0.25s; font-size: 10px; }
+  .cheat-row.open .chevron { transform: rotate(90deg); }
+
+  @media (max-width: 768px) {
+    .hero { padding: 40px 24px 40px; }
+    .panel { padding: 32px 24px; }
+    .kw-row { grid-template-columns: 140px 1fr; }
+    .kw-row .kw-cell:last-child { display: none; }
+    .playground { grid-template-columns: 1fr; }
+    .tab { padding: 14px 20px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="label">v1.0 · Invented for a Hip-Hop Enthusiast</div>
+  <h1>THE <span>FLOW</span><br>LANGUAGE</h1>
+  <p>A programming language where every keyword is a bar, every function drops like a beat, and your logic hits harder than a hook. Code that slaps.</p>
+  <span class="version-badge">FLOW v1.0 "DEBUT TAPE"</span>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('philosophy')">Philosophy</button>
+  <button class="tab" onclick="switchTab('keywords')">Keywords</button>
+  <button class="tab" onclick="switchTab('types')">Data Types</button>
+  <button class="tab" onclick="switchTab('examples')">Examples</button>
+  <button class="tab" onclick="switchTab('playground')">Playground</button>
+  <button class="tab" onclick="switchTab('cheatsheet')">Cheat Sheet</button>
+</div>
+
+<!-- PHILOSOPHY -->
+<div id="philosophy" class="panel active">
+  <div class="section-title">THE MANIFESTO</div>
+  <div class="section-sub">"Code should feel like freestyling — expressive, rhythmic, and real."</div>
+
+  <div class="phil-grid">
+    <div class="phil-card">
+      <div class="icon">🎤</div>
+      <h3>Bars over Boilerplate</h3>
+      <p>No semicolons. No curly brace hell. Lines end when you breathe — like a verse. Indentation is your flow.</p>
+    </div>
+    <div class="phil-card">
+      <div class="icon">🎵</div>
+      <h3>Rhythm = Syntax</h3>
+      <p>Code structured like a song: intro, verse, hook, outro. Programs have a <em>track</em> that runs from top to bottom.</p>
+    </div>
+    <div class="phil-card">
+      <div class="icon">🏆</div>
+      <h3>Keep It Real</h3>
+      <p>FLOW is dynamically typed but honest about it. Variables don't pretend to be something they're not.</p>
+    </div>
+    <div class="phil-card">
+      <div class="icon">🔁</div>
+      <h3>Samples & Remixes</h3>
+      <p>Functions are <em>samples</em>. Import another module? You're <em>flipping</em> it. Composition is everything.</p>
+    </div>
+    <div class="phil-card">
+      <div class="icon">🌊</div>
+      <h3>Flow State</h3>
+      <p>Programs run in a continuous <em>stream</em>. Async operations are called <em>features</em> — guests on your track.</p>
+    </div>
+    <div class="phil-card">
+      <div class="icon">🎛️</div>
+      <h3>The Studio</h3>
+      <p>Your runtime is the studio. Errors are <em>static</em>. Logs are <em>playback</em>. Debugging is <em>mixing</em>.</p>
+    </div>
+  </div>
+
+  <div class="section-title" style="font-size:32px; margin-bottom: 16px;">HELLO WORLD IN FLOW</div>
+  <div class="code-block">
+<span class="lang-badge">FLOW</span>
+<span class="comment">// Your first bar</span>
+<span class="kw">track</span> <span class="fn">HelloWorld</span>
+  <span class="kw">spit</span> <span class="str">"Hello, World — the set is open 🎤"</span>
+<span class="kw">drop</span></div>
+</div>
+
+<!-- KEYWORDS -->
+<div id="keywords" class="panel">
+  <div class="section-title">KEYWORDS</div>
+  <div class="section-sub">Every reserved word in FLOW is a term from hip-hop culture.</div>
+
+  <div class="kw-grid">
+    <div class="kw-row header">
+      <div class="kw-cell header-cell">FLOW Keyword</div>
+      <div class="kw-cell header-cell">Meaning</div>
+      <div class="kw-cell header-cell">Traditional Equivalent</div>
+    </div>
+
+    <div class="kw-row"><div class="kw-cell mono">track</div><div class="kw-cell">Defines a function or program entry point<span class="traditional">// like a song being recorded</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">def / function</span></div></div>
+    <div class="kw-row"><div class="kw-cell mono">drop</div><div class="kw-cell">Ends a block (the beat drops = block closes)<span class="traditional">// the moment everything lands</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">end / } (closing brace)</span></div></div>
+    <div class="kw-row"><div class="kw-cell mono">spit</div><div class="kw-cell">Print or output to console<span class="traditional">// spit a bar = say something</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">print / console.log</span></div></div>
+    <div class="kw-row"><div class="kw-cell mono">verse</div><div class="kw-cell">Declare a variable<span class="traditional">// a verse holds your words</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">let / var</span></div></div>
+    <div class="kw-row"><div class="kw-cell mono">bars</div><div class="kw-cell">Declare a constant (unchangeable)<span class="traditional">// your hardest lines — they don't change</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">const</span></div></div>
+    <div class="kw-row"><div class="kw-cell mono">on that</div><div class="kw-cell">If condition<span class="traditional">// "on that note, if..."</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">if</span></div></div>
+    <div class="kw-row"><div class="kw-cell mono">otherwise</div><div class="kw-cell">Else condition<span class="traditional">// the alternate path</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">else</span></div></div>
+    <div class="kw-row"><div class="kw-cell mono">flip it</div><div class="kw-cell">Else if — a pivot<span class="traditional">// sample flipped into something new</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">else if</span></div></div>
+    <div class="kw-row"><div class="kw-cell mono">loop</div><div class="kw-cell">While loop<span class="traditional">// a loop sample playing on repeat</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">while</span></div></div>
+    <div class="kw-row"><div class="kw-cell mono">run it back</div><div class="kw-cell">For loop — iterate<span class="traditional">// run the tape back, n times</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">for</span></div></div>
+    <div class="kw-row"><div class="kw-cell mono">send it</div><div class="kw-cell">Return a value from a track<span class="traditional">// send the finished track out</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">return</span></div></div>
+    <div class="kw-row"><div class="kw-cell mono">sample</div><div class="kw-cell">Import a module<span class="traditional">// flipping another artist's record</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">import</span></div></div>
+    <div class="kw-row"><div class="kw-cell mono">cut</div><div class="kw-cell">Break out of a loop<span class="traditional">// cut the record, stop</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">break</span></div></div>
+    <div class="kw-row"><div class="kw-cell mono">next bar</div><div class="kw-cell">Continue to next iteration<span class="traditional">// skip and move to the next</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">continue</span></div></div>
+    <div class="kw-row"><div class="kw-cell mono">feature</div><div class="kw-cell">Async / await — a featured artist<span class="traditional">// they'll join your track when ready</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">async / await</span></div></div>
+    <div class="kw-row"><div class="kw-cell mono">static</div><div class="kw-cell">Throw an error<span class="traditional">// static on the mic = something's wrong</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">throw / error</span></div></div>
+    <div class="kw-row"><div class="kw-cell mono">check the tape</div><div class="kw-cell">Try / catch block<span class="traditional">// listen back and handle mistakes</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">try / catch</span></div></div>
+    <div class="kw-row"><div class="kw-cell mono">cypher</div><div class="kw-cell">Define a class<span class="traditional">// a cypher is a circle of collaborators</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">class</span></div></div>
+    <div class="kw-row"><div class="kw-cell mono">inherit</div><div class="kw-cell">Extend a class<span class="traditional">// carry the legacy forward</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">extends</span></div></div>
+    <div class="kw-row"><div class="kw-cell mono">real talk</div><div class="kw-cell">Assert / assert equals (testing)<span class="traditional">// no cap, this must be true</span></div><div class="kw-cell"><span style="font-family:'Space Mono',monospace;color:#555;font-size:12px">assert</span></div></div>
+  </div>
+</div>
+
+<!-- DATA TYPES -->
+<div id="types" class="panel">
+  <div class="section-title">DATA TYPES</div>
+  <div class="section-sub">Every value in FLOW has a vibe. Here's how data is described.</div>
+
+  <div class="type-grid">
+    <div class="type-card">
+      <div class="type-name">bar</div>
+      <div class="type-aka">aka: String</div>
+      <div class="type-desc">Text. A bar of lyrics. Single or double quotes work — just stay consistent like your flow.</div>
+      <div class="type-example">verse name = "Kendrick"</div>
+    </div>
+    <div class="type-card">
+      <div class="type-name">count</div>
+      <div class="type-aka">aka: Integer</div>
+      <div class="type-desc">Whole numbers. Like counting bars, listeners, or your Grammy count.</div>
+      <div class="type-example">verse grammy_count = 17</div>
+    </div>
+    <div class="type-card">
+      <div class="type-name">tempo</div>
+      <div class="type-aka">aka: Float / Decimal</div>
+      <div class="type-desc">Numbers with decimals. Like BPM values or streaming percentages.</div>
+      <div class="type-example">verse bpm = 93.5</div>
+    </div>
+    <div class="type-card">
+      <div class="type-name">vibe</div>
+      <div class="type-aka">aka: Boolean</div>
+      <div class="type-desc">Either fire or mid. No in-between.</div>
+      <div class="type-example">verse is_fire = fire<br>verse is_mid = mid</div>
+    </div>
+    <div class="type-card">
+      <div class="type-name">setlist</div>
+      <div class="type-aka">aka: Array / List</div>
+      <div class="type-desc">An ordered list. Like a show setlist — sequence matters.</div>
+      <div class="type-example">verse set = [<br>  "HUMBLE.", "DNA.", "LOYALTY."<br>]</div>
+    </div>
+    <div class="type-card">
+      <div class="type-name">archive</div>
+      <div class="type-aka">aka: Object / Dictionary</div>
+      <div class="type-desc">Key-value pairs. Like liner notes — labeled information about a thing.</div>
+      <div class="type-example">verse artist = {<br>  name: "SZA",<br>  era: "SOS"<br>}</div>
+    </div>
+    <div class="type-card">
+      <div class="type-name">silence</div>
+      <div class="type-aka">aka: Null / None</div>
+      <div class="type-desc">The absence of sound — deliberately empty. Not an error, just quiet.</div>
+      <div class="type-example">verse feature = silence</div>
+    </div>
+    <div class="type-card">
+      <div class="type-name">freestyle</div>
+      <div class="type-aka">aka: Any / Dynamic</div>
+      <div class="type-desc">Explicitly untyped. Could be anything. Use sparingly — freestyles are wild cards.</div>
+      <div class="type-example">verse x: freestyle = 42</div>
+    </div>
+  </div>
+
+  <div class="section-title" style="font-size: 28px; margin-bottom: 12px;">OPERATORS</div>
+  <div class="code-block">
+<span class="comment">// Comparison operators</span>
+<span class="kw">on that</span> score <span class="op">hits</span> 100     <span class="comment">// == (equals)</span>
+<span class="kw">on that</span> score <span class="op">aint</span> 0      <span class="comment">// != (not equal)</span>
+<span class="kw">on that</span> score <span class="op">over</span> 90     <span class="comment">// > (greater than)</span>
+<span class="kw">on that</span> score <span class="op">under</span> 50    <span class="comment">// < (less than)</span>
+
+<span class="comment">// Logic operators</span>
+<span class="kw">on that</span> fire <span class="op">and</span> talent    <span class="comment">// && (and)</span>
+<span class="kw">on that</span> hits <span class="op">or</span> streams    <span class="comment">// || (or)</span>
+<span class="kw">on that</span> <span class="op">no</span> mid            <span class="comment">// ! (not)</span>
+
+<span class="comment">// Arithmetic</span>
+verse total = bars <span class="op">+</span> hooks  <span class="comment">// addition</span>
+verse split = deal <span class="op">/</span> <span class="num">2</span>     <span class="comment">// division</span>
+verse royalty = rate <span class="op">*</span> plays <span class="comment">// multiplication</span>
+  </div>
+</div>
+
+<!-- EXAMPLES -->
+<div id="examples" class="panel">
+  <div class="section-title">EXAMPLE TRACKS</div>
+  <div class="section-sub">Real programs written in FLOW. Study the structure.</div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <span class="title">01 — FIBONACCI.flow</span>
+      <span class="desc">Generate the Fibonacci sequence</span>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+<span class="lang-badge">FLOW</span>
+<span class="comment">// Fibonacci — like how a hit builds on what came before</span>
+<span class="kw">track</span> <span class="fn">fibonacci</span> with <span class="var">n</span>
+  <span class="kw">verse</span> a = <span class="num">0</span>
+  <span class="kw">verse</span> b = <span class="num">1</span>
+  <span class="kw">verse</span> result = []
+
+  <span class="kw">run it back</span> i from <span class="num">0</span> to n
+    result.add(a)
+    <span class="kw">verse</span> next = a + b
+    a = b
+    b = next
+  <span class="kw">drop</span>
+
+  <span class="kw">send it</span> result
+<span class="kw">drop</span>
+
+<span class="kw">spit</span> <span class="fn">fibonacci</span>(<span class="num">8</span>)
+<span class="comment">// OUTPUT: [0, 1, 1, 2, 3, 5, 8, 13]</span></div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <span class="title">02 — CIPHER.flow</span>
+      <span class="desc">Object-Oriented: a Cypher of Artists</span>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+<span class="lang-badge">FLOW</span>
+<span class="comment">// Define an Artist using a cypher (class)</span>
+<span class="kw">cypher</span> <span class="fn">Artist</span>
+  <span class="kw">track</span> setup with <span class="var">name</span>, <span class="var">genre</span>, <span class="var">albums</span>
+    me.name = name
+    me.genre = genre
+    me.albums = albums
+  <span class="kw">drop</span>
+
+  <span class="kw">track</span> <span class="fn">bio</span>
+    <span class="kw">send it</span> <span class="str">"</span><span class="var">{me.name}</span><span class="str"> drops </span><span class="var">{me.genre}</span><span class="str"> and has </span><span class="var">{me.albums}</span><span class="str"> albums"</span>
+  <span class="kw">drop</span>
+<span class="kw">drop</span>
+
+<span class="kw">verse</span> sza = <span class="fn">Artist</span>(<span class="str">"SZA"</span>, <span class="str">"R&B"</span>, <span class="num">3</span>)
+<span class="kw">spit</span> sza.<span class="fn">bio</span>()
+<span class="comment">// OUTPUT: SZA drops R&B and has 3 albums</span></div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <span class="title">03 — ERRORHANDLING.flow</span>
+      <span class="desc">Try/Catch using "check the tape"</span>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+<span class="lang-badge">FLOW</span>
+<span class="comment">// Handle errors like a pro handles a bad show</span>
+<span class="kw">check the tape</span>
+  <span class="kw">verse</span> stream_count = <span class="fn">getStreams</span>(<span class="str">"badlink"</span>)
+  <span class="kw">spit</span> <span class="str">"Streams: </span><span class="var">{stream_count}</span><span class="str">"</span>
+<span class="kw">or if static</span> err
+  <span class="kw">spit</span> <span class="str">"Mic check failed: </span><span class="var">{err.message}</span><span class="str">"</span>
+<span class="kw">drop</span>
+
+<span class="comment">// Async with feature keyword</span>
+<span class="kw">feature track</span> <span class="fn">fetchChart</span>
+  <span class="kw">verse</span> data = <span class="kw">feature</span> <span class="fn">hitTheAPI</span>(<span class="str">"billboard/hot100"</span>)
+  <span class="kw">send it</span> data
+<span class="kw">drop</span></div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <span class="title">04 — VIBE CHECK.flow</span>
+      <span class="desc">Conditionals and boolean logic</span>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+<span class="lang-badge">FLOW</span>
+<span class="kw">track</span> <span class="fn">vibeCheck</span> with <span class="var">streams</span>, <span class="var">awards</span>
+
+  <span class="kw">on that</span> streams <span class="op">over</span> <span class="num">1000000</span> <span class="op">and</span> awards <span class="op">over</span> <span class="num">0</span>
+    <span class="kw">spit</span> <span class="str">"That's a certified classic 🏆"</span>
+  <span class="kw">flip it</span> streams <span class="op">over</span> <span class="num">500000</span>
+    <span class="kw">spit</span> <span class="str">"Solid project, the streets respect it"</span>
+  <span class="kw">otherwise</span>
+    <span class="kw">spit</span> <span class="str">"Keep recording, the breakthrough is coming"</span>
+  <span class="kw">drop</span>
+
+<span class="kw">drop</span>
+
+<span class="fn">vibeCheck</span>(<span class="num">1200000</span>, <span class="num">3</span>)
+<span class="comment">// OUTPUT: That's a certified classic 🏆</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYGROUND -->
+<div id="playground" class="panel">
+  <div class="section-title">THE STUDIO</div>
+  <div class="section-sub">Write FLOW code and run it. The interpreter translates your bars into real JavaScript output.</div>
+
+  <div class="playground">
+    <div class="play-pane">
+      <div class="play-header">
+        <span class="dot dot-r"></span>
+        <span class="dot dot-y"></span>
+        <span class="dot dot-g"></span>
+        &nbsp;editor.flow
+      </div>
+      <textarea id="editor" spellcheck="false">track greet with name
+  verse msg = "Yo, " + name + "! Welcome to FLOW 🎤"
+  spit msg
+drop
+
+greet("the culture")
+
+bars maxBPM = 140
+spit "Max BPM: " + maxBPM
+
+run it back i from 1 to 5
+  spit "Bar " + i
+drop</textarea>
+    </div>
+    <div class="play-pane">
+      <div class="play-header">
+        <span class="dot dot-r"></span>
+        <span class="dot dot-y"></span>
+        <span class="dot dot-g"></span>
+        &nbsp;playback
+      </div>
+      <div class="output-area" id="output">// Hit RUN IT to see the output...</div>
+    </div>
+  </div>
+  <button class="run-btn" onclick="runFlow()">▶ RUN IT</button>
+
+  <div style="margin-top: 32px; font-size: 13px; color: #555; font-family: 'Space Mono', monospace; line-height: 1.8;">
+    <span style="color: var(--gold)">TIP:</span> The playground interprets a subset of FLOW — tracks, spit, verse, bars, run it back (loops), and on that/otherwise conditionals.
+  </div>
+</div>
+
+<!-- CHEATSHEET -->
+<div id="cheatsheet" class="panel">
+  <div class="section-title">CHEAT SHEET</div>
+  <div class="section-sub">Quick reference — tap any row to expand.</div>
+
+  <div id="cheat-container"></div>
+</div>
+
+<script>
+// TAB SWITCHING
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// CHEATSHEET DATA
+const cheatData = [
+  { q: 'track name with args ... drop', a: 'Define a function named "name" that accepts "args". Close it with drop.' },
+  { q: 'verse x = value', a: 'Declare a mutable variable x. Like "let" — can be reassigned.' },
+  { q: 'bars X = value', a: 'Declare a constant X. Like "const" — cannot be changed after assignment.' },
+  { q: 'spit expression', a: 'Print expression to the console. Supports string interpolation with {var}.' },
+  { q: 'send it value', a: 'Return a value from a track. Exits the track immediately.' },
+  { q: 'on that ... flip it ... otherwise ... drop', a: 'If / else if / else block. Always close with drop.' },
+  { q: 'loop condition ... drop', a: 'While loop — repeats as long as condition is true.' },
+  { q: 'run it back i from 0 to n ... drop', a: 'For loop — runs from start to end (exclusive of n). "i" is the counter.' },
+  { q: 'cut', a: 'Break out of the current loop immediately.' },
+  { q: 'next bar', a: 'Skip the rest of this loop iteration and continue to the next.' },
+  { q: 'sample "module"', a: 'Import a module. Like "import" or "require".' },
+  { q: 'cypher ClassName ... drop', a: 'Define a class. Use "me" instead of "this".' },
+  { q: 'inherit ParentClass', a: 'Extend a class from a parent. Placed inside the cypher definition.' },
+  { q: 'check the tape ... or if static err ... drop', a: 'Try/catch block. Handle errors (static) gracefully.' },
+  { q: 'static "message"', a: 'Throw an error with a message.' },
+  { q: 'feature track name ... drop', a: 'Define an async function. Use "feature" before calls inside to await.' },
+  { q: 'real talk a hits b', a: 'Assert that a equals b. Throws static if false. Used for testing.' },
+  { q: 'fire / mid', a: 'Boolean true / false.' },
+  { q: 'silence', a: 'Null / None — the intentional absence of a value.' },
+  { q: 'hits / aint / over / under', a: 'Comparison operators: == / != / > / <' },
+];
+
+const container = document.getElementById('cheat-container');
+cheatData.forEach((item, i) => {
+  const row = document.createElement('div');
+  row.className = 'cheat-row';
+  row.innerHTML = `
+    <div class="cheat-summary">
+      <span style="font-family:'Space Mono',monospace;color:var(--gold);font-size:12px">${item.q}</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="cheat-detail">${item.a}</div>
+  `;
+  row.addEventListener('click', () => {
+    row.classList.toggle('open');
+  });
+  container.appendChild(row);
+});
+
+// FLOW INTERPRETER
+function runFlow() {
+  const code = document.getElementById('editor').value;
+  const output = document.getElementById('output');
+  output.textContent = '';
+
+  const lines = [];
+  const log = (msg) => {
+    output.textContent += msg + '\n';
+  };
+
+  try {
+    interpretFlow(code, log);
+  } catch(e) {
+    output.textContent += '⚠ Static: ' + e.message;
+  }
+}
+
+function interpretFlow(code, log) {
+  // Translate FLOW to JS-like AST then evaluate
+  let js = code
+    // track name with args -> function name(args)
+    .replace(/track\s+(\w+)\s+with\s+([\w,\s]+)/g, 'function $1($2) {')
+    .replace(/track\s+(\w+)/g, 'function $1() {')
+    // drop -> }
+    .replace(/\bdrop\b/g, '}')
+    // verse x = -> let x =
+    .replace(/\bverse\b/g, 'let')
+    // bars X = -> const X =
+    .replace(/\bbars\b/g, 'const')
+    // spit -> __log
+    .replace(/\bspit\b/g, '__log')
+    // send it -> return
+    .replace(/send it\b/g, 'return')
+    // on that -> if (
+    .replace(/\bon that\b\s+/g, 'if (')
+    // flip it -> } else if (
+    .replace(/\bflip it\b\s+/g, '} else if (')
+    // otherwise -> } else {
+    .replace(/\botherwise\b/g, '} else {')
+    // run it back i from x to y -> for(let i=x;i<y;i++)
+    .replace(/run it back\s+(\w+)\s+from\s+(\d+)\s+to\s+(\d+)/g, 'for(let $1=$2;$1<$3;$1++)')
+    // loop -> while (
+    .replace(/\bloop\b\s+/g, 'while (')
+    // cut -> break
+    .replace(/\bcut\b/g, 'break')
+    // next bar -> continue
+    .replace(/\bnext bar\b/g, 'continue')
+    // hits -> ===, aint -> !==, over -> >, under -> <
+    .replace(/\bhits\b/g, '===')
+    .replace(/\baint\b/g, '!==')
+    .replace(/\bover\b/g, '>')
+    .replace(/\bunder\b/g, '<')
+    // vibe literals
+    .replace(/\bfire\b/g, 'true')
+    .replace(/\bmid\b/g, 'false')
+    .replace(/\bsilence\b/g, 'null')
+    // Fix if statements — they need closing parenthesis before {
+    .replace(/if \(([^\n{]+)\n/g, 'if ($1) {\n')
+    .replace(/while \(([^\n{]+)\n/g, 'while ($1) {\n')
+    .replace(/else if \(([^\n{]+)\n/g, 'else if ($1) {\n');
+
+  // Close if/loop blocks that got wrapped into single lines
+  const fn = new Function('__log', js);
+  fn(log);
+}
+</script>
+</body>
+</html>
